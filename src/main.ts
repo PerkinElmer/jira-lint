@@ -22,7 +22,8 @@ import { PullRequestParams, JIRADetails, JIRALintActionInputs } from './types';
 import { DEFAULT_PR_ADDITIONS_THRESHOLD } from './constants';
 
 const getInputs = (): JIRALintActionInputs => {
-  const JIRA_TOKEN: string = core.getInput('jira-token', { required: true });
+  const JIRA_USERNAME: string = core.getInput('jira-username', { required: true });
+  const JIRA_PASSWORD: string = core.getInput('jira-password', { required: true });
   const JIRA_BASE_URL: string = core.getInput('jira-base-url', { required: true });
   const GITHUB_TOKEN: string = core.getInput('github-token', { required: true });
   const BRANCH_IGNORE_PATTERN: string = core.getInput('skip-branches', { required: false }) || '';
@@ -30,7 +31,8 @@ const getInputs = (): JIRALintActionInputs => {
   const PR_THRESHOLD = parseInt(core.getInput('pr-threshold', { required: false }), 10);
 
   return {
-    JIRA_TOKEN,
+    JIRA_USERNAME,
+    JIRA_PASSWORD,
     GITHUB_TOKEN,
     BRANCH_IGNORE_PATTERN,
     SKIP_COMMENTS,
@@ -41,7 +43,15 @@ const getInputs = (): JIRALintActionInputs => {
 
 async function run(): Promise<void> {
   try {
-    const { JIRA_TOKEN, JIRA_BASE_URL, GITHUB_TOKEN, BRANCH_IGNORE_PATTERN, SKIP_COMMENTS, PR_THRESHOLD } = getInputs();
+    const {
+      JIRA_USERNAME,
+      JIRA_PASSWORD,
+      JIRA_BASE_URL,
+      GITHUB_TOKEN,
+      BRANCH_IGNORE_PATTERN,
+      SKIP_COMMENTS,
+      PR_THRESHOLD,
+    } = getInputs();
 
     const defaultAdditionsCount = 800;
     const prThreshold: number = PR_THRESHOLD ? Number(PR_THRESHOLD) : defaultAdditionsCount;
@@ -115,7 +125,7 @@ async function run(): Promise<void> {
     const issueKey = issueKeys[issueKeys.length - 1];
     console.log(`JIRA key -> ${issueKey}`);
 
-    const { getTicketDetails } = getJIRAClient(JIRA_BASE_URL, JIRA_TOKEN);
+    const { getTicketDetails } = getJIRAClient(JIRA_BASE_URL, JIRA_USERNAME, JIRA_PASSWORD);
     const details: JIRADetails = await getTicketDetails(issueKey);
     if (details.key) {
       const podLabel = details?.project?.name || '';

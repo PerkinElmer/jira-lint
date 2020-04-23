@@ -38,13 +38,15 @@ export const getHotfixLabel = (baseBranch: string): string => {
   return '';
 };
 
-export const getJIRAClient = (baseURL: string, token: string): JIRAClient => {
+export const getJIRAClient = (baseURL: string, username: string, password: string): JIRAClient => {
   const client = axios.create({
     baseURL: `${baseURL}/rest/api/3`,
     timeout: 2000,
-    headers: { Authorization: `Basic ${token}` },
+    auth: {
+      username,
+      password,
+    },
   });
-
   const getIssue = async (id: string): Promise<JIRA.Issue> => {
     try {
       const response = await client.get<JIRA.Issue>(
